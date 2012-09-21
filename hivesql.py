@@ -6,11 +6,11 @@ import pymysql
 
 
 con = pymysql.connect(
-    host='192.168.224.215',
-    port=3309,
-    user='hotel_hive',
-    passwd='tgKWg9olycuiqn2e',
-    db='hotel_hive'
+    host='127.0.0.1',
+    port=3306,
+    user='username',
+    passwd='password',
+    db='hive_meta_db'
 )
 
 
@@ -74,23 +74,23 @@ def get_part_str(part):
         result.append("%s='%s'" % (k, v))
     return ', '.join(result)
 
-    
+
 if __name__ == '__main__':
-    
+
     if len(sys.argv) < 2:
         print('Enter the table name !')
         exit()
     tbl_name = sys.argv[1]
-    
+
     table_info = get_table_info(tbl_name)
     if table_info is None:
         print('No table found')
         exit()
 
     # 获取列信息
-    column_info = get_column_info(table_info['SD_ID']) 
+    column_info = get_column_info(table_info['SD_ID'])
     # 获取分区信息
-    partition_info = get_partition_info(table_info['TBL_ID']) 
+    partition_info = get_partition_info(table_info['TBL_ID'])
     # 获取序列化信息
     serde_info = get_serde_info(table_info['SD_ID'])
     # 获取分隔符信息
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         partition_count = len(partition_info)
         for i in range(partition_count):
             name, type, comment = partition_info[i]
-            print '  ', name, type, 
+            print '  ', name, type,
             if i < partition_count - 1:
                 print(',')
             else:
@@ -135,8 +135,8 @@ if __name__ == '__main__':
     print("lines terminated by '\%03d'" % ord(delim_info['line.delim']))
 
     if 'org.apache.hadoop.mapred.SequenceFileInputFormat' == serde_info['INPUT_FORMAT']:
-        stored_type = 'sequencefile' 
-    else: 
+        stored_type = 'sequencefile'
+    else:
         stored_type = 'textfile'
     print("stored as %s" % stored_type)
     print("location '%s';" % serde_info['LOCATION'])
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     parts = get_load_parts(table_info['TBL_ID'])
     for part in parts:
         part_str = get_part_str(part)
-        print(add_partition_sql % (tbl_name, part_str, serde_info['LOCATION'] + '/' + part))        
+        print(add_partition_sql % (tbl_name, part_str, serde_info['LOCATION'] + '/' + part))
 
     print('')
     print('exit;')
